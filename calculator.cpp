@@ -21,6 +21,7 @@ Calculator::Calculator(QWidget *parent)
     connect(ui->pushButton_7, SIGNAL(clicked()), this, SLOT(digit_press()));
     connect(ui->pushButton_8, SIGNAL(clicked()), this, SLOT(digit_press()));
     connect(ui->pushButton_9, SIGNAL(clicked()), this, SLOT(digit_press()));
+    connect(ui->pushButton_00, SIGNAL(clicked()), this, SLOT(digit_press()));
 
     connect(ui->pushButton_plus_minus, SIGNAL(clicked()), this, SLOT(operations()));
     connect(ui->pushButton_xInCube, SIGNAL(clicked()), this, SLOT(operations()));
@@ -95,8 +96,9 @@ void Calculator::operations() {
 
         ui->showResult->setText(stringAllNumbers);
 
-        allInputNum = "(" + allInputNum + ")";
-        ui->ShowInput->setText("-" + allInputNum);
+//        allInputNum = "(" + allInputNum + ")";
+//        ui->ShowInput->setText("-" + allInputNum);
+
     }
 
     else if(button->text() == "x²") {
@@ -112,13 +114,19 @@ void Calculator::operations() {
 
     else if(button->text() == "√x") {
         allNumbers = (ui->showResult->text()).toDouble();
-        allNumbers = sqrt(allNumbers);
-        stringAllNumbers = QString::number(allNumbers, 'g', 15);
 
-        ui->showResult->setText(stringAllNumbers);
+        if(allNumbers >= 0) {
+            allNumbers = sqrt(allNumbers);
+            stringAllNumbers = QString::number(allNumbers, 'g', 15);
 
-        allInputNum = "(" + allInputNum + ")";
-        ui->ShowInput->setText("√" + allInputNum);
+            ui->showResult->setText(stringAllNumbers);
+
+            allInputNum = "(" + allInputNum + ")";
+            ui->ShowInput->setText("√" + allInputNum);
+        } else {
+            on_pushButton_clearAll_clicked();
+            ui->showResult->setText("error");
+        }
     }
 
 //    flagDel = false;
@@ -285,7 +293,7 @@ void Calculator::on_pushButton_clearAll_clicked()
 
 void Calculator::on_pushButton_clearLast_clicked()
 {
-    QString str;
+    QString str, rezStl;
     int strSize;
 
     str = ui->ShowInput->text();
@@ -310,6 +318,10 @@ void Calculator::on_pushButton_clearLast_clicked()
 
     str.resize(strSize-1);
     ui->ShowInput->setText(str);
+
+    rezStl = ui->showResult->text();
+    rezStl.resize(rezStl.size()-1);
+    ui->showResult->setText(rezStl);
 }
 
 
