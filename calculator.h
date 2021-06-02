@@ -20,7 +20,7 @@ private slots:
     void digit_press();
     void operations();
     void math_operations();
-    //void calcResult();
+    void calcResult();
     void on_pushButton_equalSign_clicked();
     void on_pushButton_clearAll_clicked();
     void on_pushButton_clearLast_clicked();

@@ -2,8 +2,8 @@
 #include "./ui_calculator.h"
 
 double numFirst, resultOperations;
-//bool flagPlusOrMinus = false; // flagDel = false,
-bool flagFirst = false;
+bool flagFirst = false, flagPlusOrMinus = false, flagDel = false, flagSign = true;
+bool check_plus = false, check_minus = false, check_mult = false, check_div = false, check_percent = false;
 
 Calculator::Calculator(QWidget *parent)
     : QMainWindow(parent)
@@ -47,10 +47,20 @@ Calculator::~Calculator()
 }
 
 void Calculator::digit_press() {
-
     QPushButton *button = (QPushButton *)sender();
     double allNumbers;
     QString stringAllNumbers, showLine;
+
+    if(ui->showResult->text() == "error") {
+        ui->showResult->setText("");
+    }
+
+    if(flagDel) {
+        showLine = ui->showResult->text();
+        ui->ShowInput->setText(showLine);
+        flagDel = false;
+
+    }
 
     allNumbers = (ui->showResult->text() + button->text()).toDouble();
     stringAllNumbers = QString::number(allNumbers, 'g', 15);
@@ -59,12 +69,16 @@ void Calculator::digit_press() {
 
     showLine = ui->ShowInput->text();
     ui->ShowInput->setText(showLine + button->text());
+
+    flagSign = true;
 }
 
 void Calculator::on_pushButton_dot_clicked()
 {
-    if(!(ui->showResult->text().contains('.')))
+    if(!(ui->showResult->text().contains('.'))) {
         ui->showResult->setText(ui->showResult->text() + ".");
+        ui->ShowInput->setText(ui->ShowInput->text() + ".");
+    }
 }
 
 void Calculator::operations() {
@@ -115,62 +129,104 @@ void Calculator::math_operations()
     QPushButton *button = (QPushButton *)sender();
     QString showLine;
 
+    if(flagDel) {
+        showLine = ui->showResult->text();
+        ui->ShowInput->setText(showLine);
+        flagDel = false;
+    }
+
+    if (flagFirst) {
+        calcResult();
+    }
+    flagFirst = true;
+
     button->setChecked(true);
 
     showLine = ui->ShowInput->text();
     numFirst = ui->showResult->text().toDouble();
 
-    if(ui->pushButton_plus->isChecked()) {
-        ui->ShowInput->setText(showLine + "+");
+    if(flagSign) {
+        if(ui->pushButton_plus->isChecked()) {
+            ui->ShowInput->setText(showLine + "+");
 
-    } else if(ui->pushButton_minus->isChecked()) {
-        ui->ShowInput->setText(showLine + "-");
+            check_plus = true;
+            flagPlusOrMinus = true;
 
-    } else if(ui->pushButton_division->isChecked()) {
-        ui->ShowInput->setText(showLine + "÷");
+        } else if(ui->pushButton_minus->isChecked()) {
+            ui->ShowInput->setText(showLine + "-");
 
-    } else if(ui->pushButton_multiplication->isChecked()) {
-         ui->ShowInput->setText(showLine + "×");
+            check_minus = true;
+            flagPlusOrMinus = true;
 
-    } else if(ui->pushButton_percent->isChecked()) {
-        ui->ShowInput->setText(showLine + "%");
+        } else if(ui->pushButton_division->isChecked()) {
+            if(flagPlusOrMinus) {
+                ui->ShowInput->setText("(" + showLine+ ")" + "÷");
+            } else {
+                ui->ShowInput->setText(showLine + "÷");
+            }
+            check_div = true;
+            flagPlusOrMinus = false;
+
+            if(!flagFirst){
+               ui->ShowInput->setText(ui->ShowInput->text() + "-");
+               ui->showResult->setText("-");
+            }
+
+        } else if(ui->pushButton_multiplication->isChecked()) {
+            if(flagPlusOrMinus) {
+                ui->ShowInput->setText("(" + showLine+ ")" + "×");
+            } else {
+                ui->ShowInput->setText(showLine + "×");
+            }
+
+             check_mult = true;
+             flagPlusOrMinus = false;
+
+        } else if(ui->pushButton_percent->isChecked()) {
+            if(flagPlusOrMinus) {
+                ui->ShowInput->setText("(" + showLine+ ")" + "%");
+            } else {
+                ui->ShowInput->setText(showLine + "%");
+            }
+
+            check_percent = true;
+            flagPlusOrMinus = false;
+        }
+        flagSign = false;
     }
-
     ui->showResult->setText("");
 
 }
 
-//void Calculator::calcResult() {
-
-//}
-
-void Calculator::on_pushButton_equalSign_clicked()
-{
+void Calculator::calcResult() {
     double numSecond;
     QString newLine;
 
     numSecond = ui->showResult->text().toDouble();
-    bool mmm = ui->pushButton_plus->isChecked();
-    if(mmm) {
+
+    if (check_plus) {
 
         resultOperations = numFirst + numSecond;
         newLine = QString::number(resultOperations,'g', 15);
 
-        ui->ShowInput->setText(newLine);
-
         ui->showResult->setText(QString::number(resultOperations,'g', 15));
         ui->pushButton_plus->setChecked(false);
 
-    } else if(ui->pushButton_minus->isChecked()) {
+        check_plus = false;
+
+    } else if(check_minus) {
         resultOperations = numFirst - numSecond;
         newLine = QString::number(resultOperations,'g', 15);
 
         ui->showResult->setText(newLine);
         ui->pushButton_minus->setChecked(false);
 
-    } else if(ui->pushButton_division->isChecked()) {
+        check_minus = false;
+
+    } else if(check_div) {
         if (numSecond == 0) {
-            ui->showResult->setText("Ошибка: деление на ноль");
+            on_pushButton_clearAll_clicked();
+            ui->showResult->setText("error");
         } else {
             resultOperations = numFirst / numSecond;
             newLine = QString::number(resultOperations,'g', 15);
@@ -179,33 +235,57 @@ void Calculator::on_pushButton_equalSign_clicked()
         }
         ui->pushButton_division->setChecked(false);
 
-    } else if(ui->pushButton_multiplication->isChecked()) {
+        check_div = false;
+
+    } else if(check_mult) {
         resultOperations = numFirst * numSecond;
         newLine = QString::number(resultOperations,'g', 15);
 
         ui->showResult->setText(newLine);
         ui->pushButton_multiplication->setChecked(false);
 
-    } else if(ui->pushButton_percent->isChecked()) {
+        check_mult = false;
+
+    } else if(check_percent) {
         resultOperations = numFirst * (numSecond/100);
         newLine = QString::number(resultOperations,'g', 15);
 
         ui->showResult->setText(newLine);
         ui->pushButton_percent->setChecked(false);
 
+        check_percent = false;
+
     }
+}
+
+void Calculator::on_pushButton_equalSign_clicked()
+{
+    calcResult();
     flagFirst = false;
+    flagDel = true;
+    flagPlusOrMinus = false;
 }
 
 void Calculator::on_pushButton_clearAll_clicked()
 {
     ui->ShowInput->setText("");
     ui->showResult->setText("");
+    flagFirst = false;
+    flagPlusOrMinus = false;
+    flagDel = false;
+    flagSign = true;
+    check_plus = false;
+    check_minus = false;
+    check_mult = false;
+    check_div = false;
+    check_percent = false;
+
+
 }
 
 void Calculator::on_pushButton_clearLast_clicked()
 {
-    QString str, showLine;
+    QString str;
     int strSize;
 
     str = ui->ShowInput->text();
@@ -213,14 +293,19 @@ void Calculator::on_pushButton_clearLast_clicked()
 
     if(str.right(1) == "+") {
         ui->pushButton_plus->setChecked(false);
+        check_plus = false;
     } else if(str.right(1) == "-") {
         ui->pushButton_minus->setChecked(false);
+        check_minus = false;
     } else if(str.right(1) == "÷") {
         ui->pushButton_division->setChecked(false);
+        check_div = false;
     } else if(str.right(1) == "×") {
         ui->pushButton_multiplication->setChecked(false);
+        check_mult = false;
     } else if(str.right(1) == "%") {
         ui->pushButton_percent->setChecked(false);
+        check_percent = false;
     }
 
     str.resize(strSize-1);
