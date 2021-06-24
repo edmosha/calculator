@@ -761,10 +761,7 @@ font-size: 20px;
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QLabel {
-qproperty-alignment: 'AlignVCenter | AlignRight';
-}
-font-size: 36px;
+     <string notr="true">font-size: 36px;
 border-radius: 0;</string>
     </property>
     <property name="text">
@@ -774,9 +771,9 @@ border-radius: 0;</string>
    <widget class="QLabel" name="ShowInput">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>10</x>
       <y>20</y>
-      <width>321</width>
+      <width>300</width>
       <height>25</height>
      </rect>
     </property>
